@@ -410,7 +410,8 @@ export const ThemeProvider = ({ children }) => {
       
       // Force a style recalculation
       document.body.style.display = 'none';
-      document.body.offsetHeight; // Trigger reflow
+      /* eslint-disable-next-line no-unused-vars */
+      const _forceReflow = document.body.offsetHeight; // Trigger reflow
       document.body.style.display = '';
     }
   }, [state.currentTheme]);
