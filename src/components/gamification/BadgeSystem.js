@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from 'react-query';
@@ -203,7 +203,7 @@ const BadgeSystem = () => {
   const [selectedBadge, setSelectedBadge] = useState(null);
 
   // Fetch user badges
-  const { data: badgesData } = useQuery(
+  const { data: _badgesData } = useQuery(
     'user-badges',
     async () => {
       const response = await axios.get('/api/user/badges');
@@ -326,9 +326,7 @@ const BadgeSystem = () => {
     return progress >= 100;
   };
 
-  const getBadgeById = (badgeId) => {
-    return badges.find(badge => badge.id === badgeId);
-  };
+  // helper removed (unused): getBadgeById
 
   return (
     <BadgeContainer>

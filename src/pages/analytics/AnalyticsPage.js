@@ -16,7 +16,6 @@ import {
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import axios from 'axios';
-import { useAuth } from '../../contexts/AuthContext';
 import { useMood } from '../../contexts/MoodContext';
 
 // Register Chart.js components
@@ -206,8 +205,7 @@ const Spinner = styled.div`
 `;
 
 const AnalyticsPage = () => {
-  const { user } = useAuth();
-  const { getMoodColor, getMoodEmoji } = useMood();
+  const { getMoodColor } = useMood();
   const [selectedPeriod, setSelectedPeriod] = useState('30');
 
   // Fetch analytics data

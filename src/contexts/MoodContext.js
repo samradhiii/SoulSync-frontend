@@ -282,6 +282,7 @@ export const MoodProvider = ({ children }) => {
       fetchMoodHistory();
       fetchMoodStats();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Auto-update theme based on current mood

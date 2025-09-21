@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useMood } from '../../contexts/MoodContext';
+ 
 
 const MoodSelectorContainer = styled.div`
   background: var(--color-surface);
@@ -244,7 +244,7 @@ const MoodSelector = ({
   showIntensity = true,
   title = "How are you feeling?"
 }) => {
-  const { getMoodColor, getMoodEmoji, getMoodDescription } = useMood();
+ 
   const [localMood, setLocalMood] = useState(selectedMood || 'neutral');
   const [localIntensity, setLocalIntensity] = useState(intensity);
 

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useMutation } from 'react-query';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../contexts/AuthContext';
+ 
 
 const ExportContainer = styled.div`
   background: var(--color-surface);
@@ -130,7 +130,6 @@ const InfoBox = styled.div`
 `;
 
 const DataExport = () => {
-  const { user } = useAuth();
   const [selectedFormat, setSelectedFormat] = useState('json');
 
   const exportMutation = useMutation(
