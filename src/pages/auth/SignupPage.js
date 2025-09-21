@@ -20,7 +20,8 @@ const SignupCard = styled(motion.div)`
   box-shadow: var(--shadow-2xl);
   padding: var(--spacing-8);
   width: 100%;
-  max-width: 450px;
+  /* Cap width responsively so grid never overflows the card */
+  max-width: min(620px, 92vw);
   position: relative;
   /* Keep content contained within the card */
   overflow: hidden;
@@ -72,15 +73,17 @@ const Subtitle = styled.p`
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-4);
+  gap: var(--spacing-3);
 `;
 
 const FormRow = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--spacing-4);
+  width: 100%;
 
-  @media (max-width: 520px) {
+  /* Collapse to single column earlier to avoid overflow on zoomed/compact layouts */
+  @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
 `;
@@ -89,6 +92,8 @@ const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2);
+  /* Critical: allow grid item to shrink within its column to prevent overflow */
+  min-width: 0;
 `;
 
 const Label = styled.label`
