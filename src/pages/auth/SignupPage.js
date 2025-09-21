@@ -22,8 +22,8 @@ const SignupCard = styled(motion.div)`
   width: 100%;
   max-width: 450px;
   position: relative;
-  /* Allow focus rings/shadows of inputs to be visible and avoid clipping at bottom */
-  overflow: visible;
+  /* Keep content contained within the card */
+  overflow: hidden;
   /* Extra breathing room at the bottom so the last field/button isn't visually cut */
   padding-bottom: calc(var(--spacing-8) + 8px);
 
@@ -77,10 +77,10 @@ const Form = styled.form`
 
 const FormRow = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--spacing-4);
 
-  @media (max-width: 480px) {
+  @media (max-width: 520px) {
     grid-template-columns: 1fr;
   }
 `;
@@ -104,6 +104,8 @@ const Input = styled.input`
   font-size: var(--font-size-base);
   transition: all var(--transition-fast);
   background: var(--color-surface);
+  width: 100%;
+  max-width: 100%;
 
   &:focus {
     outline: none;
