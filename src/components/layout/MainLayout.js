@@ -256,6 +256,14 @@ const ContentArea = styled.div`
   flex: 1;
   padding: var(--spacing-6);
   overflow-y: auto;
+
+  @media (max-width: 768px) {
+    padding: var(--spacing-4);
+  }
+
+  @media (max-width: 480px) {
+    padding: var(--spacing-3);
+  }
 `;
 
 const Overlay = styled(motion.div)`
@@ -385,7 +393,7 @@ const MainLayout = ({ children }) => {
                 <NavItem key={nav.path}>
                   <NavLink
                     active={location.pathname === nav.path}
-                    onClick={() => navigate(nav.path)}
+                    onClick={() => { navigate(nav.path); setSidebarOpen(false); }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
