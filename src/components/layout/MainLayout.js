@@ -22,7 +22,7 @@ const Sidebar = styled(motion.aside)`
   height: 100vh;
   left: 0;
   top: 0;
-  z-index: var(--z-fixed);
+  z-index: 1001; /* Ensure above Overlay for clickability */
   overflow-y: auto;
 
   @media (max-width: 768px) {
@@ -273,7 +273,7 @@ const Overlay = styled(motion.div)`
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: var(--z-modal-backdrop);
+  z-index: 1000; /* Below Sidebar */
   display: none;
 
   @media (max-width: 768px) {
