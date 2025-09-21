@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -365,6 +365,25 @@ const MainLayout = ({ children }) => {
     return `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
   };
 
+  // Close sidebar on route change for small screens
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      setSidebarOpen(false);
+    }
+  }, [location.pathname]);
+
+  // Ensure correct state on resize: close drawer when switching breakpoints
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        // Desktop: sidebar is fixed; ensure state doesn't keep mobile drawer open
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <LayoutContainer>
       <AnimatePresence>
@@ -373,9 +392,8 @@ const MainLayout = ({ children }) => {
       
       <Sidebar
         isOpen={sidebarOpen}
-        initial={{ x: -280 }}
-        animate={{ x: 0 }}
-        exit={{ x: -280 }}
+        // Animate position based on state to prevent staying open on mobile
+        animate={{ x: sidebarOpen ? 0 : -280 }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
       >
         <SidebarHeader>
