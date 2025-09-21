@@ -8,29 +8,7 @@ const EditorContainer = styled.div`
   overflow: hidden;
 `;
 
-const Toolbar = styled.div`
-  display: flex;
-  gap: var(--spacing-2);
-  padding: var(--spacing-2);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  flex-wrap: wrap;
-`;
-
-const ToolbarButton = styled.button`
-  padding: var(--spacing-1) var(--spacing-2);
-  border: 1px solid var(--color-border);
-  background: ${props => props.active ? 'var(--color-primary)' : 'var(--color-background)'};
-  color: ${props => props.active ? 'white' : 'var(--color-text)'};
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-
-  &:hover {
-    background: ${props => props.active ? 'var(--color-primary-dark)' : 'var(--color-surface-variant)'};
-  }
-`;
+ 
 
 const TextArea = styled.textarea`
   width: 100%;

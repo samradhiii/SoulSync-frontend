@@ -202,8 +202,8 @@ const BadgeSystem = () => {
   const { user } = useAuth();
   const [selectedBadge, setSelectedBadge] = useState(null);
 
-  // Fetch user badges
-  const { data: _badgesData } = useQuery(
+  // Fetch user badges (result not directly used; triggers refetching and cache)
+  useQuery(
     'user-badges',
     async () => {
       const response = await axios.get('/api/user/badges');
