@@ -22,7 +22,10 @@ const SignupCard = styled(motion.div)`
   width: 100%;
   max-width: 450px;
   position: relative;
-  overflow: hidden;
+  /* Allow focus rings/shadows of inputs to be visible and avoid clipping at bottom */
+  overflow: visible;
+  /* Extra breathing room at the bottom so the last field/button isn't visually cut */
+  padding-bottom: calc(var(--spacing-8) + 8px);
 
   &::before {
     content: '';
