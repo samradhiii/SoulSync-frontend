@@ -26,7 +26,6 @@ const Sidebar = styled(motion.aside)`
   overflow-y: auto;
 
   @media (max-width: 768px) {
-    transform: translateX(${props => props.isOpen ? '0' : '-100%'});
     width: 100%;
     max-width: 280px;
   }
@@ -275,9 +274,11 @@ const Overlay = styled(motion.div)`
   background: rgba(0, 0, 0, 0.5);
   z-index: 1000; /* Below Sidebar */
   display: none;
+  pointer-events: none; /* Ignore clicks when hidden */
 
   @media (max-width: 768px) {
     display: ${props => props.isOpen ? 'block' : 'none'};
+    pointer-events: ${props => props.isOpen ? 'auto' : 'none'};
   }
 `;
 
@@ -411,6 +412,7 @@ const MainLayout = ({ children }) => {
                 <NavItem key={nav.path}>
                   <NavLink
                     active={location.pathname === nav.path}
+                    type="button"
                     onClick={() => { navigate(nav.path); setSidebarOpen(false); }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
