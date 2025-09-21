@@ -22,10 +22,11 @@ const Sidebar = styled(motion.aside)`
   height: 100vh;
   left: 0;
   top: 0;
-  z-index: 1001; /* Ensure above Overlay for clickability */
+  z-index: var(--z-fixed);
   overflow-y: auto;
 
   @media (max-width: 768px) {
+    z-index: 1001; /* Above overlay on mobile */
     width: 100%;
     max-width: 280px;
   }
