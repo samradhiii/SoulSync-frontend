@@ -11,6 +11,16 @@ import GlobalStyles from './styles/GlobalStyles';
 
 // Configure axios base URL - Works across different environments
 axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+// Set a reasonable timeout so failed calls don't hang UI for too long
+axios.defaults.timeout = 12000;
+
+// Warm up the backend (non-blocking) to reduce cold-start delay in production
+// This does not change any app logic; it simply triggers the health endpoint once on load
+try {
+  const healthUrl = `${axios.defaults.baseURL}/api/health`;
+  // Use fetch to avoid interfering with axios interceptors; ignore any errors
+  fetch(healthUrl, { method: 'GET', cache: 'no-store', mode: 'cors' }).catch(() => {});
+} catch (_) {}
 
 // Create a client
 const queryClient = new QueryClient({
