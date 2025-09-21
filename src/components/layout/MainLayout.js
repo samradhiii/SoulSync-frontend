@@ -333,6 +333,7 @@ const MoonIcon = () => (
 
 const MainLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const { currentMood } = useMood();
@@ -373,16 +374,19 @@ const MainLayout = ({ children }) => {
     }
   }, [location.pathname]);
 
-  // Ensure correct state on resize: close drawer when switching breakpoints
+  // Track viewport to distinguish mobile vs desktop and ensure correct state on resize
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 768) {
-        // Desktop: sidebar is fixed; ensure state doesn't keep mobile drawer open
+    const updateViewport = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        // On desktop, keep sidebar visible and reset drawer state
         setSidebarOpen(false);
       }
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+    return () => window.removeEventListener('resize', updateViewport);
   }, []);
 
   return (
@@ -393,8 +397,8 @@ const MainLayout = ({ children }) => {
       
       <Sidebar
         isOpen={sidebarOpen}
-        // Animate position based on state to prevent staying open on mobile
-        animate={{ x: sidebarOpen ? 0 : -280 }}
+        // Only translate on mobile. Desktop stays fixed at x:0 like before.
+        animate={{ x: isMobile ? (sidebarOpen ? 0 : -280) : 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
       >
         <SidebarHeader>
