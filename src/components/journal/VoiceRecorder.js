@@ -152,9 +152,11 @@ const VoiceRecorder = ({ onTranscription, onAudioData, disabled = false }) => {
   const audioChunksRef = useRef([]);
   const intervalRef = useRef(null);
   const recognitionRef = useRef(null);
+  const recorderMimeRef = useRef('');
 
   // Check for browser support
   const isSupported = navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
+  const isMediaRecorderSupported = typeof window !== 'undefined' && 'MediaRecorder' in window;
 
   useEffect(() => {
     return () => {
@@ -173,6 +175,11 @@ const VoiceRecorder = ({ onTranscription, onAudioData, disabled = false }) => {
       return;
     }
 
+    if (!isMediaRecorderSupported) {
+      setError('Voice recording is not supported on this browser. Please use Chrome on Android or desktop Chrome/Edge.');
+      return;
+    }
+
     try {
       setError(null);
       setTranscription(''); // Clear previous transcription
@@ -181,7 +188,25 @@ const VoiceRecorder = ({ onTranscription, onAudioData, disabled = false }) => {
       // Start speech recognition for real-time transcription
       startSpeechRecognition();
       
-      mediaRecorderRef.current = new MediaRecorder(stream);
+      // Pick a supported mimeType for better mobile compatibility
+      let selectedMime = '';
+      try {
+        if (typeof MediaRecorder !== 'undefined' && typeof MediaRecorder.isTypeSupported === 'function') {
+          if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+            selectedMime = 'audio/webm;codecs=opus';
+          } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+            selectedMime = 'audio/webm';
+          } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+            // Some mobile browsers support mpeg-4 container
+            selectedMime = 'audio/mp4';
+          }
+        }
+      } catch (_) {}
+
+      const options = selectedMime ? { mimeType: selectedMime } : undefined;
+      recorderMimeRef.current = selectedMime;
+
+      mediaRecorderRef.current = new MediaRecorder(stream, options);
       audioChunksRef.current = [];
 
       mediaRecorderRef.current.ondataavailable = (event) => {
@@ -189,7 +214,9 @@ const VoiceRecorder = ({ onTranscription, onAudioData, disabled = false }) => {
       };
 
       mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        // Use the recorder's mimeType or a safe default; do NOT force WAV
+        const mimeType = mediaRecorderRef.current?.mimeType || recorderMimeRef.current || 'audio/webm';
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
         setAudioBlob(audioBlob);
         const url = URL.createObjectURL(audioBlob);
         setAudioUrl(url);
