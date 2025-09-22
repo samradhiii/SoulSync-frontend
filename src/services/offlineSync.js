@@ -443,7 +443,8 @@ class OfflineSyncService {
   }
 
   getAuthToken() {
-    return localStorage.getItem('authToken');
+    // Keep this aligned with AuthContext localStorage key
+    return localStorage.getItem('token');
   }
 
   // Cache Management

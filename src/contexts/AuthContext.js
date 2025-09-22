@@ -107,8 +107,16 @@ export const AuthProvider = ({ children }) => {
             },
           });
         } catch (error) {
-          localStorage.removeItem('token');
-          dispatch({ type: AUTH_ACTIONS.LOGOUT });
+          const status = error?.response?.status;
+          if (status === 401) {
+            // Token invalid/expired: clear it and logout
+            localStorage.removeItem('token');
+            dispatch({ type: AUTH_ACTIONS.LOGOUT });
+          } else {
+            // Network or transient error: keep token, just stop loading
+            console.warn('Auth check failed (non-401). Keeping token and continuing as unauthenticated until next success.');
+            dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
+          }
         }
       } else {
         dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
