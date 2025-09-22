@@ -26,6 +26,14 @@ const AlertContainer = styled(motion.div)`
   text-align: center;
   position: relative;
   box-shadow: var(--shadow-2xl);
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 640px) {
+    padding: var(--spacing-6);
+  }
 `;
 
 const AlertIcon = styled.div`
@@ -55,8 +63,9 @@ const HelplineSection = styled.div`
   border-radius: var(--radius-lg);
   padding: var(--spacing-6);
   margin-bottom: var(--spacing-6);
-  max-height: 300px;
   overflow-y: auto;
+  flex: 1;
+  min-height: 120px;
 `;
 
 const HelplineTitle = styled.h3`
@@ -119,6 +128,8 @@ const ActionButtons = styled.div`
   display: flex;
   gap: var(--spacing-3);
   justify-content: center;
+  margin-top: auto;
+  padding-top: var(--spacing-2);
 `;
 
 const Button = styled.button`
