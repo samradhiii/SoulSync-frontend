@@ -319,7 +319,7 @@ const ProfilePage = () => {
             </InfoItem>
             <InfoItem>
               <InfoLabel>Account Status</InfoLabel>
-              <InfoValue>{user?.isActive ? 'Active' : 'Inactive'}</InfoValue>
+              <InfoValue>{user?.isActive === false ? 'Inactive' : 'Active'}</InfoValue>
             </InfoItem>
           </Section>
 

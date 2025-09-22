@@ -97,7 +97,7 @@ const MoodContext = createContext();
 export const MoodProvider = ({ children }) => {
   const [state, dispatch] = useReducer(moodReducer, initialState);
   const { user } = useAuth();
-  const { setMoodTheme } = useTheme();
+  const { setMoodTheme, clearMoodTheme, animations } = useTheme();
 
   // Fetch current mood
   const fetchCurrentMood = async () => {
@@ -285,19 +285,17 @@ export const MoodProvider = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  // Auto-update theme based on current mood
+  // Auto-update theme based on current mood WHEN animations toggle is enabled
   useEffect(() => {
-    if (state.currentMood && typeof setMoodTheme === 'function') {
-      const moodString = typeof state.currentMood === 'string' ? state.currentMood : state.currentMood.currentMood;
-      console.log('MoodContext: Applying mood theme:', moodString);
+    const moodString = typeof state.currentMood === 'string' ? state.currentMood : state.currentMood?.currentMood;
+    if (animations && moodString && typeof setMoodTheme === 'function') {
+      console.log('MoodContext: Applying mood theme (animations on):', moodString);
       setMoodTheme(moodString);
-    } else {
-      console.log('MoodContext: No mood or setMoodTheme function', { 
-        mood: state.currentMood, 
-        hasSetMoodTheme: typeof setMoodTheme === 'function' 
-      });
+    } else if (!animations && typeof clearMoodTheme === 'function') {
+      console.log('MoodContext: Animations off, clearing mood theme.');
+      clearMoodTheme();
     }
-  }, [state.currentMood, setMoodTheme]);
+  }, [animations, state.currentMood, setMoodTheme, clearMoodTheme]);
 
   const value = {
     currentMood: state.currentMood,

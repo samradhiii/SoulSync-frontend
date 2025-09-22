@@ -421,8 +421,14 @@ export const ThemeProvider = ({ children }) => {
     localStorage.setItem('theme', state.userPreference);
   }, [state.userPreference]);
 
-  // Set theme based on user preference
+  // Set theme based on user preference (supports 'light' | 'dark' | 'auto')
   const setTheme = (themeName) => {
+    if (themeName === 'auto') {
+      dispatch({ type: THEME_ACTIONS.SET_USER_PREFERENCE, payload: 'auto' });
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      dispatch({ type: THEME_ACTIONS.SET_THEME, payload: prefersDark ? 'dark' : 'light' });
+      return;
+    }
     if (themes[themeName]) {
       dispatch({ type: THEME_ACTIONS.SET_THEME, payload: themeName });
       dispatch({ type: THEME_ACTIONS.SET_USER_PREFERENCE, payload: themeName });
@@ -450,6 +456,24 @@ export const ThemeProvider = ({ children }) => {
   const toggleAnimations = () => {
     dispatch({ type: THEME_ACTIONS.TOGGLE_ANIMATIONS });
   };
+
+  // When userPreference is 'auto', follow system preference and react to changes
+  useEffect(() => {
+    if (state.userPreference !== 'auto') return;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const apply = () => {
+      dispatch({ type: THEME_ACTIONS.SET_THEME, payload: media.matches ? 'dark' : 'light' });
+    };
+    apply();
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', apply);
+      return () => media.removeEventListener('change', apply);
+    } else {
+      // Safari fallback
+      media.addListener(apply);
+      return () => media.removeListener(apply);
+    }
+  }, [state.userPreference]);
 
   // Get current theme object
   const getCurrentTheme = () => {
