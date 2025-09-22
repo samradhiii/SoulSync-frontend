@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
 import { useTheme } from './ThemeContext';
@@ -98,80 +98,117 @@ export const MoodProvider = ({ children }) => {
   const [state, dispatch] = useReducer(moodReducer, initialState);
   const { user } = useAuth();
   const { setMoodTheme, clearMoodTheme, animations } = useTheme();
+  const inFlight = useRef({ current: false, history: false, stats: false, patterns: false });
+  const cancelTokensRef = useRef([]);
+
+  const makeCancelSource = () => {
+    const source = axios.CancelToken.source();
+    cancelTokensRef.current.push(source);
+    return source;
+  };
 
   // Fetch current mood
   const fetchCurrentMood = async () => {
     if (!user) return;
-    
+    if (inFlight.current) { /* noop for legacy check */ }
+    if (inFlight.current.current) return; // avoid concurrent calls
+    const cancelSource = makeCancelSource();
+    inFlight.current.current = true;
+
     dispatch({ type: MOOD_ACTIONS.SET_LOADING, payload: true });
     try {
-      const response = await axios.get('/api/mood/current');
+      const response = await axios.get('/api/mood/current', { cancelToken: cancelSource.token });
       dispatch({
         type: MOOD_ACTIONS.SET_CURRENT_MOOD,
         payload: response.data.data,
       });
     } catch (error) {
-      dispatch({
-        type: MOOD_ACTIONS.SET_ERROR,
-        payload: error.response?.data?.message || 'Failed to fetch current mood',
-      });
+      if (!axios.isCancel(error)) {
+        dispatch({
+          type: MOOD_ACTIONS.SET_ERROR,
+          payload: error.response?.data?.message || 'Failed to fetch current mood',
+        });
+      }
+    } finally {
+      inFlight.current.current = false;
     }
   };
 
   // Fetch mood history
   const fetchMoodHistory = async (days = 30) => {
     if (!user) return;
-    
+    if (inFlight.current.history) return;
+    const cancelSource = makeCancelSource();
+    inFlight.current.history = true;
+
     dispatch({ type: MOOD_ACTIONS.SET_LOADING, payload: true });
     try {
-      const response = await axios.get(`/api/mood/trend?days=${days}`);
+      const response = await axios.get(`/api/mood/trend?days=${days}` , { cancelToken: cancelSource.token });
       dispatch({
         type: MOOD_ACTIONS.SET_MOOD_HISTORY,
         payload: response.data.data.trend,
       });
     } catch (error) {
-      dispatch({
-        type: MOOD_ACTIONS.SET_ERROR,
-        payload: error.response?.data?.message || 'Failed to fetch mood history',
-      });
+      if (!axios.isCancel(error)) {
+        dispatch({
+          type: MOOD_ACTIONS.SET_ERROR,
+          payload: error.response?.data?.message || 'Failed to fetch mood history',
+        });
+      }
+    } finally {
+      inFlight.current.history = false;
     }
   };
 
   // Fetch mood statistics
   const fetchMoodStats = async (days = 30) => {
     if (!user) return;
-    
+    if (inFlight.current.stats) return;
+    const cancelSource = makeCancelSource();
+    inFlight.current.stats = true;
+
     dispatch({ type: MOOD_ACTIONS.SET_LOADING, payload: true });
     try {
-      const response = await axios.get(`/api/mood/stats?days=${days}`);
+      const response = await axios.get(`/api/mood/stats?days=${days}`, { cancelToken: cancelSource.token });
       dispatch({
         type: MOOD_ACTIONS.SET_MOOD_STATS,
         payload: response.data.data.stats,
       });
     } catch (error) {
-      dispatch({
-        type: MOOD_ACTIONS.SET_ERROR,
-        payload: error.response?.data?.message || 'Failed to fetch mood statistics',
-      });
+      if (!axios.isCancel(error)) {
+        dispatch({
+          type: MOOD_ACTIONS.SET_ERROR,
+          payload: error.response?.data?.message || 'Failed to fetch mood statistics',
+        });
+      }
+    } finally {
+      inFlight.current.stats = false;
     }
   };
 
   // Fetch mood patterns
   const fetchMoodPatterns = async (days = 30) => {
     if (!user) return;
-    
+    if (inFlight.current.patterns) return;
+    const cancelSource = makeCancelSource();
+    inFlight.current.patterns = true;
+
     dispatch({ type: MOOD_ACTIONS.SET_LOADING, payload: true });
     try {
-      const response = await axios.get(`/api/mood/patterns?days=${days}`);
+      const response = await axios.get(`/api/mood/patterns?days=${days}`, { cancelToken: cancelSource.token });
       dispatch({
         type: MOOD_ACTIONS.SET_MOOD_PATTERNS,
         payload: response.data.data.patterns,
       });
     } catch (error) {
-      dispatch({
-        type: MOOD_ACTIONS.SET_ERROR,
-        payload: error.response?.data?.message || 'Failed to fetch mood patterns',
-      });
+      if (!axios.isCancel(error)) {
+        dispatch({
+          type: MOOD_ACTIONS.SET_ERROR,
+          payload: error.response?.data?.message || 'Failed to fetch mood patterns',
+        });
+      }
+    } finally {
+      inFlight.current.patterns = false;
     }
   };
 
@@ -277,6 +314,10 @@ export const MoodProvider = ({ children }) => {
 
   // Load initial data when user is available
   useEffect(() => {
+    // cancel any pending requests when user changes or component unmounts
+    cancelTokensRef.current.forEach(src => src.cancel('component-updated'));
+    cancelTokensRef.current = [];
+
     if (user) {
       fetchCurrentMood();
       fetchMoodHistory();
