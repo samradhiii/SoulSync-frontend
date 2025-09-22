@@ -364,7 +364,12 @@ const themeReducer = (state, action) => {
       return {
         ...state,
         moodTheme: null,
-        currentTheme: state.userPreference === 'auto' ? 'light' : state.userPreference,
+        // If userPreference is 'auto', follow system preference instead of forcing light
+        currentTheme: state.userPreference === 'auto'
+          ? (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light')
+          : state.userPreference,
       };
     case THEME_ACTIONS.TOGGLE_ANIMATIONS:
       return {

@@ -187,7 +187,7 @@ const DangerButton = styled.button`
 
 const SettingsPage = () => {
   const { user, logout } = useAuth();
-  const { theme, setTheme, animations, toggleAnimations } = useTheme();
+  const { theme, userPreference, setTheme, animations, toggleAnimations } = useTheme();
   const [notifications, setNotifications] = useState(true);
   const [emailUpdates, setEmailUpdates] = useState(true);
 
@@ -245,19 +245,19 @@ const SettingsPage = () => {
               </SettingInfo>
               <ThemeSelector>
                 <ThemeButton
-                  active={theme === 'light'}
+                  active={userPreference === 'light'}
                   onClick={() => setTheme('light')}
                 >
                   Light
                 </ThemeButton>
                 <ThemeButton
-                  active={theme === 'dark'}
+                  active={userPreference === 'dark'}
                   onClick={() => setTheme('dark')}
                 >
                   Dark
                 </ThemeButton>
                 <ThemeButton
-                  active={theme === 'auto'}
+                  active={userPreference === 'auto'}
                   onClick={() => setTheme('auto')}
                 >
                   Auto
