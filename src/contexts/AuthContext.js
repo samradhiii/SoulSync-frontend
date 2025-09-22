@@ -5,7 +5,10 @@ import toast from 'react-hot-toast';
 // Initial state
 const initialState = {
   user: null,
-  token: localStorage.getItem('token'),
+  // Prefer sessionStorage for per-tab isolation; fallback to localStorage for backward compatibility
+  token: (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('token')) ||
+         (typeof localStorage !== 'undefined' && localStorage.getItem('token')) ||
+         null,
   loading: true,
   error: null,
 };
@@ -85,37 +88,63 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (state.token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`;
-      localStorage.setItem('token', state.token);
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('token', state.token);
+      }
+      // Clean up legacy token to avoid cross-tab leakage
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('token');
+      }
     } else {
       delete axios.defaults.headers.common['Authorization'];
-      localStorage.removeItem('token');
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem('token');
+      }
     }
   }, [state.token]);
 
   // Check if user is logged in on app start
   useEffect(() => {
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
+      const token = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('token')) ||
+                    (typeof localStorage !== 'undefined' && localStorage.getItem('token')) ||
+                    null;
       if (token) {
-        try {
-          const response = await axios.get('/api/auth/me');
-          dispatch({
-            type: AUTH_ACTIONS.LOGIN_SUCCESS,
-            payload: {
-              user: response.data.data.user,
-              token,
-            },
-          });
-        } catch (error) {
-          const status = error?.response?.status;
-          if (status === 401) {
-            // Token invalid/expired: clear it and logout
-            localStorage.removeItem('token');
-            dispatch({ type: AUTH_ACTIONS.LOGOUT });
-          } else {
-            // Network or transient error: keep token, just stop loading
-            console.warn('Auth check failed (non-401). Keeping token and continuing as unauthenticated until next success.');
-            dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
+        // Ensure Authorization header is present before the first request
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        // Retry a few times on non-401 errors to avoid spurious logouts during brief outages
+        const maxAttempts = 3;
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+          try {
+            const response = await axios.get('/api/auth/me');
+            dispatch({
+              type: AUTH_ACTIONS.LOGIN_SUCCESS,
+              payload: {
+                user: response.data.data.user,
+                token,
+              },
+            });
+            return; // success, exit
+          } catch (error) {
+            const status = error?.response?.status;
+            if (status === 401) {
+              // Token invalid/expired: clear it and logout immediately
+              if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem('token');
+              if (typeof localStorage !== 'undefined') localStorage.removeItem('token');
+              dispatch({ type: AUTH_ACTIONS.LOGOUT });
+              return;
+            }
+            if (attempt < maxAttempts) {
+              // Wait briefly and retry
+              await delay(800 * attempt);
+              continue;
+            } else {
+              console.warn('Auth check failed after retries (non-401). Keeping token and continuing.');
+              dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
+              return;
+            }
           }
         }
       } else {
